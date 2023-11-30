@@ -7,6 +7,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
 import time
 import os
+import re
 
 def isfloat(num):
     try:
@@ -14,12 +15,20 @@ def isfloat(num):
         return True
     except ValueError:
         return False
-def isint(num):
+def isYear(string):
+    # Define the regex pattern
+    pattern = r'(\d+)Q(\d+)'
     try:
-        int(num)
-        return True
+        # Match the pattern in the string
+        match = re.match(pattern, string)
+        if match:
+            # Extract the numbers before and after "Q"
+            before_q = int(match.group(1)) + 2000
+            return before_q
+        else:
+            return int(string)
     except ValueError:
-        return False
+        return -1
 
 def get_data(stock_num):
     start_time = time.time()
@@ -52,7 +61,7 @@ def get_data(stock_num):
         # Now, you can interact with the select element as needed
         # For example, you can change the selected option
         select = Select(select_element)
-        select.select_by_index(3)  # Replace with the desired option index
+        select.select_by_index(0)  # Replace with the desired option index
         time.sleep(1)
 
         soup = BeautifulSoup(driver.page_source, "lxml")
@@ -65,17 +74,30 @@ def get_data(stock_num):
         dfs = pd.read_html((data.prettify()))
 
         df = dfs[0]
-
         # print(df)
+        print(df.columns)
 
-        driver.quit()
+        list_close = [float(x) for x in (df['年度股價(元)']['收盤']) if isfloat(x)]
+        print(list_close)
+        # print(df['年度']['年度'])
+        list_year = [isYear(x) for x in (df['年度']['年度']) if isYear(x) > 0]
+        print(list_year)
 
-        df.to_csv('csv_file.csv', index=False)
+        data_input = pd.DataFrame({'year':list_year, 'close_price':list_close})
+        data_input = data_input.sort_values(by='year').reset_index(drop=True)
+        data_input.index = data_input.year
+
+        print(data_input)
+
+        data_input.to_csv('csv_file.csv')
         # df.to_excel('excel_file.xlsx')
 
     # Read the CSV file into a DataFrame
-    df1 = pd.read_csv('csv_file.csv')
-    # print(df1)
+    df = pd.read_csv('csv_file.csv')
+    print(df)
+    # print(df.columns)
+
+    driver.quit()
 
     print(f"running time : {time.time() - start_time}")
 
