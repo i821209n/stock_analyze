@@ -22,52 +22,59 @@ import pandas as pd
 # keys_list = list(df.columns)
 # print(keys_list)
 
-# 設定請求的URL和參數
-url = 'https://mops.twse.com.tw/mops/web/ajax_t05st10_ifrs'
-payload = {
-    'encodeURIComponent': 1,
-    'step': 1,
-    'firstin': 1,
-    'off': 1,
-    'keyword4': '',
-    'code1': '',
-    'TYPEK2': '',
-    'checkbtn': '',
-    'queryName': 'co_id',
-    'inpuType': 'co_id',
-    'TYPEK': 'all',
-    'isnew': 'false',
-    'co_id': '2330',
-    'year': '113',
-    'month': '01'
-}
+def get_monthly_revenue(co_id, year, month):
+    url = 'https://mops.twse.com.tw/mops/web/ajax_t05st10_ifrs'
+    payload = {
+        'encodeURIComponent': 1,
+        'step': 1,
+        'firstin': 1,
+        'off': 1,
+        'keyword4': '',
+        'code1': '',
+        'TYPEK2': '',
+        'checkbtn': '',
+        'queryName': 'co_id',
+        'inpuType': 'co_id',
+        'TYPEK': 'all',
+        'isnew': 'false',
+        'co_id': co_id,
+        'year': year,
+        'month': month
+    }
 
-# 發送POST請求
-response = requests.post(url, data=payload)
+    # 發送POST請求
+    response = requests.post(url, data=payload)
 
-# 確認請求成功
-if response.status_code == 200:
-    # 使用pandas從HTML表格中提取數據
-    tables = pd.read_html(response.text)
+    # 確認請求成功
+    if response.status_code == 200:
 
-    # 如果有多個表格，根據實際需求選擇需要的表格
-    if tables:
-        # 檢查提取的表格數量
-        print(f"提取的表格數量: {len(tables)}")
+        # 如果有多個表格，根據實際需求選擇需要的表格
+        if "table" in response.text:
+            # 使用pandas從HTML表格中提取數據
+            tables = pd.read_html(response.text)
 
-        # 顯示提取的表格
-        print("----------------------------")
-        for i, table in enumerate(tables):
-            print(f"表格 {i+1}:\n{table}\n")
+            # 檢查提取的表格數量
+            print(f"提取的表格數量: {len(tables)}")
+
+            # 顯示提取的表格
             print("----------------------------")
+            for i, table in enumerate(tables):
+                print(f"表格 {i+1}:\n{table}\n")
+                print("----------------------------")
+                
+            df = tables[1]  # 假設我們需要第一個表格
 
-        df = tables[1]  # 假設我們需要第一個表格
-
-        result = df[df["項目"] == "本月"]["營業收入淨額"].values[0]
-        print(f"本月營收 : {result} (單位：新台幣仟元)")
-
+            # 提取項目為“本月”的營業收入淨額
+            try:
+                result = df[df["項目"] == "本月"]["營業收入淨額"].values[0]
+                print(f"{year}年{month}月 {co_id} 的本月營收 : {result} (單位：新台幣仟元)")
+            except IndexError:
+                print("無法找到項目為“本月”的數據。")
+        else:
+            print("未找到任何表格數據。")
+            # print(response.text)
     else:
-        print("未找到任何表格數據。")
-else:
-    print(f"請求失敗，狀態碼: {response.status_code}")
+        print(f"請求失敗，狀態碼: {response.status_code}")
 
+# 使用範例
+get_monthly_revenue('2330', '113', '06')
