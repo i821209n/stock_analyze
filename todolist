@@ -1,0 +1,21 @@
+Test
+    twse 
+        ()revenue
+        ()ROA
+        ()ROE
+        ()PE Ratio
+    ()logging system
+
+Main function
+    Stock Analysis table
+        ()revenue table
+        ()plot a revenue chart
+        ()ROA table 
+        ()plot a ROA chart
+        ()ROE table 
+        ()plot a ROE chart
+        ()PE Ratio table 
+        ()plot a PE Ratio streamgraph
+    Website format
+    ()logging system
+    
