@@ -1,10 +1,10 @@
 Test
     twse 
-        ()revenue
+        (V)revenue
         ()ROA
         ()ROE
         ()PE Ratio
-    ()logging system
+    (V)logging system
 
 Main function
     Stock Analysis table
